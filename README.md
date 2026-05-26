@@ -1,153 +1,118 @@
-# Stock Price Prediction using Stacked LSTM (TensorFlow)
+# Optimized Stock Price Prediction using Multi-Step LSTM + TensorFlow
 
-A deep learning project that predicts future stock prices using a **Stacked LSTM (Long Short-Term Memory)** network trained on historical stock closing prices.
+Predict future stock prices using an optimized **Multi-Step LSTM Neural Network**.
 
-The model fetches historical stock data, preprocesses it using MinMax scaling, trains a multi-layer LSTM network, and recursively forecasts the next **30 trading days**.
+This project forecasts the **next 30 days of stock prices directly in one forward pass** instead of recursively predicting one day at a time.
 
----
+Built using:
 
-## Project Overview
-
-This project performs:
-
-1. Historical stock data collection
-2. Data preprocessing and normalization
-3. Sliding-window sequence generation
-4. Training a stacked LSTM model
-5. Price prediction
-6. Evaluation using RMSE
-7. Future forecasting (next 30 days)
-8. Model serialization
+- TensorFlow / Keras
+- LSTM
+- Bidirectional LSTM
+- GPU Acceleration (Google Colab CUDA)
+- Tiingo Stock API
+- MinMax Scaling
+- Multi-Step Forecasting
 
 ---
 
-## Architecture
+# Project Overview
+
+Traditional LSTM forecasting predicts:
 
 ```text
-Historical Stock Data
-         ↓
-Close Price Extraction
-         ↓
-MinMax Scaling
-         ↓
-Sliding Window Creation
-(100 Previous Days)
-         ↓
-Stacked LSTM
-(50 → 50 → 50)
-         ↓
-Dense Layer
-         ↓
-Next Day Prediction
-         ↓
-Recursive Forecasting
-(30 Days)
+Day 1
+↓
+
+Day 2 using Day 1
+
+↓
+
+Day 3 using Day 2
 ```
 
----
+This causes **error accumulation**.
 
-## Dataset
+This project improves the pipeline by predicting:
 
-Data Source:
-- Tiingo Stock API
+```text
+Previous 100 Days
+↓
 
-Ticker Used:
-- AAPL (Apple)
+Predict Entire Next 30 Days
+```
 
-Date Range:
-- 2020-01-01 → 2025-11-01
+Result:
 
-Feature Used:
-- Closing Price only
-
----
-
-## Tech Stack
-
-- Python
-- TensorFlow / Keras
-- NumPy
-- Pandas
-- Matplotlib
-- Scikit-Learn
-- Requests
-- Tiingo API
+✅ Faster inference  
+✅ More stable predictions  
+✅ Better GPU utilization  
+✅ Reduced long-term drift  
 
 ---
 
 # Model Architecture
 
-### Layer 1
-
-```python
-LSTM(50, return_sequences=True)
-```
-
-Purpose:
-- Learns short-term trends
-- Extracts temporal features
-
-Output:
-
 ```text
-(100 × 50)
+Input
+(100 Days)
+
+↓
+
+Bidirectional LSTM
+128 Units
+
+↓
+
+Dropout (0.2)
+
+↓
+
+LSTM
+64 Units
+
+↓
+
+Dropout (0.2)
+
+↓
+
+Dense (64)
+
+↓
+
+Dense (30)
+
+↓
+
+Next 30 Day Prediction
 ```
 
 ---
 
-### Layer 2
+# Dataset
 
-```python
-LSTM(50, return_sequences=True)
-```
+Source:
+Tiingo API
 
-Purpose:
-- Learns higher-level sequential patterns
-- Builds deeper representation
+Ticker:
+AAPL
 
-Output:
+Period:
 
 ```text
-(100 × 50)
+2020 → 2025
+```
+
+Input Feature:
+
+```text
+Close Price
 ```
 
 ---
 
-### Layer 3
-
-```python
-LSTM(50)
-```
-
-Purpose:
-- Compresses entire sequence into a final representation
-
-Output:
-
-```text
-(50)
-```
-
----
-
-### Output Layer
-
-```python
-Dense(1)
-```
-
-Purpose:
-- Predict next stock closing price
-
-Output:
-
-```text
-Single Value
-```
-
----
-
-# Sliding Window Mechanism
+# Sliding Window
 
 Window Size:
 
@@ -155,56 +120,148 @@ Window Size:
 100 Days
 ```
 
+Forecast Horizon:
+
+```text
+30 Days
+```
+
+Transformation:
+
+```text
+[Day1 … Day100]
+
+↓
+
+[Day101 … Day130]
+```
+
+---
+
+# Optimizations Applied
+
+## 1. Direct Multi-Step Forecasting
+
+Old:
+
+```text
+100 → 1 → 1 → 1
+```
+
+New:
+
+```text
+100 → 30
+```
+
+Removes recursive prediction error.
+
+---
+
+## 2. Bidirectional LSTM
+
+Learns patterns in both directions.
+
+```text
+Forward
+↓
+
+Backward
+```
+
+---
+
+## 3. Dropout
+
+Prevents overfitting.
+
+```text
+Dropout(0.2)
+```
+
+---
+
+## 4. Early Stopping
+
+Stops training automatically.
+
+```text
+patience=10
+```
+
+---
+
+## 5. Adaptive Learning Rate
+
+```text
+ReduceLROnPlateau()
+```
+
+---
+
+# Training Results
+
+Training converged early using validation monitoring.
+
 Example:
 
-Input:
-
 ```text
-[100,102,104,...100 days]
-```
+loss ≈ 0.004
 
-Target:
-
-```text
-Day 101 Price
-```
-
-Sliding:
-
-```text
-Window 1:
-[1..100] → 101
-
-Window 2:
-[2..101] → 102
-
-Window 3:
-[3..102] → 103
+val_loss ≈ 0.00085
 ```
 
 ---
 
-## Training Configuration
+# Forecast Visualization
 
-```python
-Epochs = 100
-Batch Size = 64
-Loss = Mean Squared Error
-Optimizer = Adam
+Save your image as:
+
+```text
+images/forecast.png
 ```
+
+Then show it:
+
+```md
+## Next 30 Day Forecast
+
+![Forecast](images/forecast.png)
+```
+
+Example:
+
+## Next 30 Day Forecast
+
+![Forecast](images/forecast.png)
 
 ---
 
-## Installation
+# Training Performance
 
-Clone repository:
+Save image as:
 
-```bash
-git clone https://github.com/yourusername/stock-price-lstm.git
-cd stock-price-lstm
+```text
+images/train_vs_actual.png
 ```
 
-Install dependencies:
+Add:
+
+```md
+## Training Set Performance
+
+![Training](images/train_vs_actual.png)
+```
+
+Example:
+
+## Training Set Performance
+
+![Training](images/train_vs_actual.png)
+
+---
+
+# Install
 
 ```bash
 pip install tensorflow
@@ -213,125 +270,74 @@ pip install numpy
 pip install matplotlib
 pip install scikit-learn
 pip install requests
-pip install pandas_datareader
+pip install joblib
 ```
 
 ---
 
-## Run Project
+# Run
 
-Execute:
+Google Colab:
 
 ```bash
-python train_script.py
+Runtime
+↓
+
+Change Runtime
+
+↓
+
+GPU
 ```
 
-Outputs:
+Execute notebook cells.
+
+---
+
+# Outputs
 
 ```text
-AAPL.csv
-lstm_stock_model.h5
-scaler.pkl
+optimized_stock_model.keras
+
+optimized_scaler.pkl
+
+30 Day Forecast Graph
+
+Train vs Actual Graph
 ```
 
 ---
 
-## Prediction Workflow
+# Project Structure
 
 ```text
-Last 100 Days
-      ↓
-Predict Day 1
-      ↓
-Append Prediction
-      ↓
-Predict Day 2
-      ↓
-Append Prediction
-      ↓
-...
-      ↓
-Predict Day 30
-```
+project/
 
-This is called:
-
-```text
-Recursive Forecasting
+│
+├── notebook.ipynb
+├── optimized_stock_model.keras
+├── optimized_scaler.pkl
+├── README.md
+│
+├── images/
+│   ├── forecast.png
+│   └── train_vs_actual.png
 ```
 
 ---
 
-## Evaluation Metric
+# Future Improvements
 
-RMSE (Root Mean Squared Error)
-
-Formula:
-
-```text
-RMSE = √(Σ(y−ŷ)² / N)
-```
-
-Lower RMSE indicates better predictive performance.
+- Transformer Forecasting
+- Attention Mechanism
+- Technical Indicators
+- Sentiment Analysis
+- Multi-Stock Training
+- Hyperparameter Search
 
 ---
 
-## Future Improvements
+# Author
 
-- CUDA GPU acceleration
-- Bidirectional LSTM
-- GRU comparison
-- Transformer forecasting
-- Multi-feature input:
-  - Open
-  - High
-  - Low
-  - Volume
-- Direct 30-day prediction
-- Hyperparameter tuning
-- Deploy using FastAPI
-
----
-
-## Limitations
-
-- Uses only closing prices
-- Recursive forecasting accumulates error
-- No market sentiment
-- No technical indicators
-- Limited long-horizon accuracy
-
----
-
-## Saved Artifacts
-
-### Trained Model
-
-```text
-lstm_stock_model.h5
-```
-
-### Scaler
-
-```text
-scaler.pkl
-```
-
----
-
-## Example Output
-
-```text
-Input:
-Previous 100 stock prices
-
-Output:
-Predicted next 30 days
-```
-
----
-
-## Author
-
-Stock Price Prediction using Deep Learning and LSTM
-Built with TensorFlow + Keras
+Stock Price Prediction using Optimized Multi-Step LSTM
+TensorFlow + GPU + Google Colab

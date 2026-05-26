@@ -1,4 +1,4 @@
-# 📈 Stock Price Prediction using Stacked LSTM (TensorFlow)
+# Stock Price Prediction using Stacked LSTM (TensorFlow)
 
 A deep learning project that predicts future stock prices using a **Stacked LSTM (Long Short-Term Memory)** network trained on historical stock closing prices.
 

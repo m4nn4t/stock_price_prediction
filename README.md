@@ -1,210 +1,365 @@
-# Stock Price Prediction using Stacked LSTM (TensorFlow)
+# Stock Price Prediction using GRU + EMA + RSI + CUDA
 
-A deep learning project that predicts future stock prices using a **Stacked LSTM (Long Short-Term Memory)** network trained on historical stock closing prices.
+An advanced deep learning project for stock price forecasting using:
 
-The model fetches historical stock data, preprocesses it using MinMax scaling, trains a multi-layer LSTM network, and recursively forecasts the next **30 trading days**.
-
----
-
-## Project Overview
-
-This project performs:
-
-1. Historical stock data collection
-2. Data preprocessing and normalization
-3. Sliding-window sequence generation
-4. Training a stacked LSTM model
-5. Price prediction
-6. Evaluation using RMSE
-7. Future forecasting (next 30 days)
-8. Model serialization
-
----
-
-## Architecture
-
-```text
-Historical Stock Data
-         ↓
-Close Price Extraction
-         ↓
-MinMax Scaling
-         ↓
-Sliding Window Creation
-(100 Previous Days)
-         ↓
-Stacked LSTM
-(50 → 50 → 50)
-         ↓
-Dense Layer
-         ↓
-Next Day Prediction
-         ↓
-Recursive Forecasting
-(30 Days)
-```
-
----
-
-## Dataset
-
-Data Source:
-- Tiingo Stock API
-
-Ticker Used:
-- AAPL (Apple)
-
-Date Range:
-- 2020-01-01 → 2025-11-01
-
-Feature Used:
-- Closing Price only
-
----
-
-## Tech Stack
-
-- Python
+- GRU (Gated Recurrent Unit)
+- Technical Indicators (EMA + RSI)
+- CUDA GPU Acceleration
 - TensorFlow / Keras
-- NumPy
-- Pandas
-- Matplotlib
-- Scikit-Learn
-- Requests
-- Tiingo API
+- Multi-feature Time Series Forecasting
+
+This project predicts future stock prices while reducing prediction lag around peaks and dips using momentum-based indicators and a faster recurrent architecture.
 
 ---
 
-# Model Architecture
+#  Features
 
-### Layer 1
+✅ CUDA GPU Acceleration  
+✅ GRU-based Forecasting  
+✅ EMA Technical Indicators  
+✅ RSI Momentum Indicator  
+✅ Multi-feature Learning  
+✅ Reduced Prediction Lag  
+✅ Parallel TensorFlow Data Pipeline  
+✅ Google Colab Ready  
+✅ Training / Testing Visualization  
+✅ Multi-step Forecasting  
 
-```python
-LSTM(50, return_sequences=True)
-```
+---
 
-Purpose:
-- Learns short-term trends
-- Extracts temporal features
+#  Project Goal
 
-Output:
+Traditional LSTM stock prediction models often:
+
+- lag behind peaks
+- smooth sharp movements
+- react slowly to trend reversals
+
+This project improves forecasting by combining:
 
 ```text
-(100 × 50)
+GRU
++
+EMA
++
+RSI
++
+OHLCV Features
+```
+
+to better capture:
+
+- momentum shifts
+- volatility
+- trend exhaustion
+- turning points
+
+---
+
+# Why GRU Instead of LSTM?
+
+GRU (Gated Recurrent Unit) is a simplified version of LSTM.
+
+Advantages:
+
+✅ Faster training  
+✅ Fewer parameters  
+✅ Better short-term adaptation  
+✅ Reduced prediction lag  
+
+---
+
+#  Technical Indicators Used
+
+---
+
+## 1. EMA (Exponential Moving Average)
+
+EMA gives more importance to recent prices.
+
+### EMA 10
+
+Captures short-term trend.
+
+### EMA 30
+
+Captures long-term trend.
+
+### Why EMA helps
+
+EMA reacts faster than normal moving averages and helps the model detect:
+
+- momentum acceleration
+- bullish/bearish crossover
+- trend shifts
+
+---
+
+## 2. RSI (Relative Strength Index)
+
+RSI measures market momentum.
+
+Range:
+
+```text
+0 → 100
+```
+
+Interpretation:
+
+| RSI | Meaning |
+|---|---|
+| >70 | Overbought |
+| <30 | Oversold |
+
+### Why RSI helps
+
+RSI helps the model anticipate:
+
+- reversals
+- exhaustion
+- market overheating
+
+before price actually changes.
+
+---
+
+#  Architecture
+
+```text
+Input Features
+(Open, High, Low, Close, Volume, EMA10, EMA30, RSI)
+
+↓
+
+GRU Layer (128)
+
+↓
+
+Dropout (0.05)
+
+↓
+
+GRU Layer (64)
+
+↓
+
+Dense Layer (64)
+
+↓
+
+Forecast Output
 ```
 
 ---
 
-### Layer 2
-
-```python
-LSTM(50, return_sequences=True)
-```
-
-Purpose:
-- Learns higher-level sequential patterns
-- Builds deeper representation
-
-Output:
+#  Features Used
 
 ```text
-(100 × 50)
+[
+open,
+high,
+low,
+close,
+volume,
+EMA_10,
+EMA_30,
+RSI
+]
+```
+
+Total Features:
+
+```text
+8
 ```
 
 ---
 
-### Layer 3
+# 📈 Forecast Strategy
 
-```python
-LSTM(50)
-```
-
-Purpose:
-- Compresses entire sequence into a final representation
-
-Output:
+Sliding Window:
 
 ```text
-(50)
+100 Previous Days
+```
+
+Forecast Horizon:
+
+```text
+3 Future Days
+```
+
+Transformation:
+
+```text
+[Day1 … Day100]
+
+↓
+
+[Day101 … Day103]
 ```
 
 ---
 
-### Output Layer
+#  CUDA Optimization
 
-```python
-Dense(1)
-```
+This project uses GPU acceleration through CUDA.
 
-Purpose:
-- Predict next stock closing price
+Optimizations:
 
-Output:
+✅ TensorFlow GPU  
+✅ Parallel Batch Processing  
+✅ TensorFlow Prefetch Pipeline  
+✅ XLA Kernel Fusion  
+
+---
+
+#  Parallelization Strategy
+
+Without CUDA:
 
 ```text
-Single Value
+CPU:
+Batch1
+↓
+
+Batch2
+↓
+
+Batch3
+```
+
+With CUDA:
+
+```text
+GPU:
+Batch1 Batch2 Batch3
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+Parallel Matrix Operations
 ```
 
 ---
 
-# Sliding Window Mechanism
+#  Dataset
 
-Window Size:
+Source:
 
 ```text
-100 Days
+Tiingo Stock API
 ```
 
-Example:
-
-Input:
+Ticker:
 
 ```text
-[100,102,104,...100 days]
+AAPL
 ```
 
-Target:
+Period:
 
 ```text
-Day 101 Price
-```
-
-Sliding:
-
-```text
-Window 1:
-[1..100] → 101
-
-Window 2:
-[2..101] → 102
-
-Window 3:
-[3..102] → 103
+2020 → 2025
 ```
 
 ---
 
-## Training Configuration
+#  Visualizations
 
-```python
-Epochs = 100
-Batch Size = 64
-Loss = Mean Squared Error
-Optimizer = Adam
+---
+
+## Forecast Plot
+
+Save image:
+
+```text
+images/forecast.png
+```
+
+Add:
+
+```md
+## Forecast
+
+![Forecast](images/forecast.png)
 ```
 
 ---
 
-## Installation
+## Training Plot
 
-Clone repository:
+Save image:
 
-```bash
-git clone https://github.com/yourusername/stock-price-lstm.git
-cd stock-price-lstm
+```text
+images/train.png
 ```
 
-Install dependencies:
+Add:
+
+```md
+## Training Prediction
+
+![Training](images/train.png)
+```
+
+---
+
+## Testing Plot
+
+Save image:
+
+```text
+images/test.png
+```
+
+Add:
+
+```md
+## Testing Prediction
+
+![Testing](images/test.png)
+```
+
+---
+
+## Combined Plot
+
+Save image:
+
+```text
+images/full_plot.png
+```
+
+Add:
+
+```md
+## Combined Visualization
+
+![Combined](images/full_plot.png)
+```
+
+---
+
+#  Project Structure
+
+```text
+project/
+
+│
+├── notebook.ipynb
+├── README.md
+├── gru_stock_model.keras
+├── gru_scaler.pkl
+│
+├── images/
+│   ├── forecast.png
+│   ├── train.png
+│   ├── test.png
+│   └── full_plot.png
+```
+
+---
+
+# 🛠️ Installation
 
 ```bash
 pip install tensorflow
@@ -213,125 +368,91 @@ pip install numpy
 pip install matplotlib
 pip install scikit-learn
 pip install requests
-pip install pandas_datareader
+pip install joblib
 ```
 
 ---
 
-## Run Project
+#  Run on Google Colab
 
-Execute:
-
-```bash
-python train_script.py
-```
-
-Outputs:
+Enable GPU:
 
 ```text
-AAPL.csv
-lstm_stock_model.h5
-scaler.pkl
+Runtime
+↓
+
+Change Runtime Type
+↓
+
+GPU
 ```
+
+Then run notebook cells sequentially.
 
 ---
 
-## Prediction Workflow
+# Loss Function
+
+```python
+loss = "mse"
+```
+
+Why MSE?
+
+- better peak sensitivity
+- stronger penalty for large errors
+- sharper curve fitting
+
+---
+
+# Results
+
+The upgraded GRU + EMA + RSI model showed:
+
+✅ Reduced prediction lag  
+✅ Better peak tracking  
+✅ Better volatility following  
+✅ Improved test generalization  
+✅ Faster GPU training  
+
+---
+
+# Limitations
+
+Stock markets are highly stochastic.
+
+Even advanced models cannot perfectly predict:
+
+- sudden crashes
+- news-driven spikes
+- black swan events
+
+Goal:
 
 ```text
-Last 100 Days
-      ↓
-Predict Day 1
-      ↓
-Append Prediction
-      ↓
-Predict Day 2
-      ↓
-Append Prediction
-      ↓
-...
-      ↓
-Predict Day 30
+reduce lag
+minimize forecast error
+capture momentum
 ```
 
-This is called:
-
-```text
-Recursive Forecasting
-```
+not achieve perfect prediction.
 
 ---
 
-## Evaluation Metric
+# Future Improvements
 
-RMSE (Root Mean Squared Error)
-
-Formula:
-
-```text
-RMSE = √(Σ(y−ŷ)² / N)
-```
-
-Lower RMSE indicates better predictive performance.
+- Attention Mechanism
+- Transformer Forecasting
+- Sentiment Analysis
+- Candlestick Pattern Learning
+- Hyperparameter Optimization
+- Multi-stock Training
+- Reinforcement Learning Trading Agent
 
 ---
 
-## Future Improvements
+# Author
 
-- CUDA GPU acceleration
-- Bidirectional LSTM
-- GRU comparison
-- Transformer forecasting
-- Multi-feature input:
-  - Open
-  - High
-  - Low
-  - Volume
-- Direct 30-day prediction
-- Hyperparameter tuning
-- Deploy using FastAPI
+Stock Price Forecasting using:
 
----
-
-## Limitations
-
-- Uses only closing prices
-- Recursive forecasting accumulates error
-- No market sentiment
-- No technical indicators
-- Limited long-horizon accuracy
-
----
-
-## Saved Artifacts
-
-### Trained Model
-
-```text
-lstm_stock_model.h5
-```
-
-### Scaler
-
-```text
-scaler.pkl
-```
-
----
-
-## Example Output
-
-```text
-Input:
-Previous 100 stock prices
-
-Output:
-Predicted next 30 days
-```
-
----
-
-## Author
-
-Stock Price Prediction using Deep Learning and LSTM
-Built with TensorFlow + Keras
+GRU + EMA + RSI + CUDA + TensorFlow

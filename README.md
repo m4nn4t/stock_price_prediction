@@ -15,7 +15,7 @@ This project performs:
 3. Sliding-window sequence generation
 4. Training a stacked LSTM model
 5. Price prediction
-6. 6. Evaluation using RMSE, MAE, MAPE, R² Score and Directional Accuracy
+6. 6. Evaluation using RMSE, MAE, MAPE and R² Score 
 7. Future forecasting (next 30 days)
 8. Model serialization
 

@@ -15,7 +15,7 @@ This project performs:
 3. Sliding-window sequence generation
 4. Training a stacked LSTM model
 5. Price prediction
-6. Evaluation using RMSE
+6. 6. Evaluation using RMSE, MAE, MAPE, R² Score and Directional Accuracy
 7. Future forecasting (next 30 days)
 8. Model serialization
 
@@ -276,6 +276,31 @@ Lower RMSE indicates better predictive performance.
 
 ---
 
+## Performance Metrics
+
+### Training Performance
+
+• RMSE: 10.32  
+• MAE: 4.37  
+• MAPE: 2.59%  
+• R² Score: 0.9783  
+
+### Testing Performance
+
+• RMSE: 6.31  
+• MAE: 4.64  
+• MAPE: 2.16%  
+• R² Score: 0.9286  
+
+### Interpretation
+
+- The model explains approximately **92.86%** of the variance in unseen stock prices (Test R² = 0.9286).
+- Average prediction error on the test set is approximately **$4.64** per share.
+- The model achieves a low percentage error (**MAPE = 2.16%**) on unseen data.
+- The close agreement between training and testing metrics indicates good generalization and limited overfitting.
+
+---
+
 ## Future Improvements
 
 - CUDA GPU acceleration
@@ -295,11 +320,10 @@ Lower RMSE indicates better predictive performance.
 
 ## Limitations
 
-- Uses only closing prices
-- Recursive forecasting accumulates error
-- No market sentiment
-- No technical indicators
-- Limited long-horizon accuracy
+- Model performance depends heavily on historical price patterns.
+- Evaluation is based on a train-test split and does not use walk-forward validation.
+- Future market events and news sentiment are not incorporated.
+- Predictions should not be interpreted as financial advice.
 
 ---
 
